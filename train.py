@@ -134,9 +134,9 @@ def main(
     iter_meter = IterMeter()
     for epoch in range(1, epochs + 1):
         train(
-            model, device, train_loader, criterion, optimizer, scheduler, epoch, iter_meter,
+            model, device, train_loader, criterion, optimizer, scheduler, epoch, iter_meter,writer
         )
-        test(model, device, test_loader, criterion, epoch, iter_meter)
+        test(model, device, test_loader, criterion, epoch, iter_meter,writer)
 
 
 if __name__ == "__main__":

@@ -8,7 +8,7 @@ import torchaudio
 import numpy as np
 
 
-def train(model, device, train_loader, criterion, optimizer, scheduler, epoch, iter_meter):
+def train(model, device, train_loader, criterion, optimizer, scheduler, epoch, iter_meter,writer):
     model.train()
     data_len = len(train_loader.dataset)
     for batch_idx, _data in enumerate(train_loader):
@@ -26,7 +26,8 @@ def train(model, device, train_loader, criterion, optimizer, scheduler, epoch, i
 
         # experiment.log_metric("loss", loss.item(), step=iter_meter.get())
         # experiment.log_metric("learning_rate", scheduler.get_lr(), step=iter_meter.get())
-
+        writer.add_scalar("Loss/train", loss.item(), iter_meter.get())
+        writer.add_scalar("learning_rate",scheduler.get_last_lr()[0],iter_meter.get())
         optimizer.step()
         scheduler.step()
         iter_meter.step()
@@ -42,7 +43,7 @@ def train(model, device, train_loader, criterion, optimizer, scheduler, epoch, i
             )
 
 
-def test(model, device, test_loader, criterion, epoch, iter_meter):
+def test(model, device, test_loader, criterion, epoch, iter_meter,writer):
     print("\nevaluating...")
     model.eval()
     test_loss = 0
@@ -71,7 +72,9 @@ def test(model, device, test_loader, criterion, epoch, iter_meter):
     # experiment.log_metric("test_loss", test_loss, step=iter_meter.get())
     # experiment.log_metric("cer", avg_cer, step=iter_meter.get())
     # experiment.log_metric("wer", avg_wer, step=iter_meter.get())
-
+    writer.add_scalar("test_loss",test_loss,iter_meter.get())
+    writer.add_scalar("cer",avg_cer,iter_meter.get())
+    writer.add_scalar("wer",avg_wer,iter_meter.get())
     print(
         "Test set: Average loss: {:.4f}, Average CER: {:4f} Average WER: {:.4f}\n".format(
             test_loss, avg_cer, avg_wer
