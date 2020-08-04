@@ -7,11 +7,13 @@ import torch.nn.functional as F
 import torchaudio
 import numpy as np
 from utils.functions import GreedyDecoder, cer, wer
+import time
 
 
 def train(model, device, train_loader, criterion, optimizer, scheduler, epoch, iter_meter, writer):
     model.train()
     data_len = len(train_loader.dataset)
+    train_start_time = time.time()
     for batch_idx, _data in enumerate(train_loader):
         spectrograms, labels, input_lengths, label_lengths = _data
         spectrograms, labels = spectrograms.to(device), labels.to(device)
@@ -33,15 +35,18 @@ def train(model, device, train_loader, criterion, optimizer, scheduler, epoch, i
         scheduler.step()
         iter_meter.step()
         if batch_idx % 100 == 0 or batch_idx == data_len:
+            train_finish_time = time.time()
             print(
-                "Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}".format(
+                "Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tTook: {:.2f} seconds".format(
                     epoch,
                     batch_idx * len(spectrograms),
                     data_len,
                     100.0 * batch_idx / len(train_loader),
                     loss.item(),
+                    train_finish_time - train_start_time,
                 )
             )
+            train_start_time = time.time()
     return loss.item()
 
 
