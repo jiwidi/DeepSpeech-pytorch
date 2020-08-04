@@ -72,7 +72,7 @@ def main(
     use_cuda = torch.cuda.is_available()
     torch.manual_seed(7)
     device = torch.device("cuda" if use_cuda else "cpu")
-
+    print(f"Using GPU: {device}")
     if not os.path.isdir("./data"):
         os.makedirs("./data")
 
