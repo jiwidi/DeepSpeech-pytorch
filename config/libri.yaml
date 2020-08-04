@@ -1,12 +1,14 @@
-n_cnn_layers: 3
-n_rnn_layers: 5
+n_cnn_layers: 2
+n_rnn_layers: 3
 rnn_dim: 512
 n_class: 29
 n_feats: 128
 stride: 2
 dropout: 0.1
 learning_rate: 0.0005
-batch_size: 20
+batch_size: 2
 epochs: 10
 libri_train_set : ["train-clean-100", "train-clean-360", "train-other-500"]
 libri_test_set : "test-clean"
+continue_from: "checkpoints/libri-epoch1.pth.tar"
+checkpoint: True

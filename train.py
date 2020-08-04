@@ -7,7 +7,7 @@ import torch.nn.functional as F
 import torchaudio
 from torch.utils.tensorboard import SummaryWriter
 from model.deepspeech import DeepSpeech
-from utils.functions import *
+from utils.functions import data_processing, GreedyDecoder
 from solver.solver import train, test
 import numpy as np
 import random
@@ -67,7 +67,6 @@ def main(
     batch_size = hparams["batch_size"]
     print(batch_size)
     epochs = hparams["epochs"]
-    # experiment.log_parameters(hparams)
 
     use_cuda = torch.cuda.is_available()
     torch.manual_seed(7)
@@ -94,14 +93,14 @@ def main(
         batch_size=hparams["batch_size"],
         shuffle=True,
         collate_fn=lambda x: data_processing(x, "train"),
-        **kwargs
+        **kwargs,
     )
     test_loader = data.DataLoader(
         dataset=test_dataset,
         batch_size=hparams["batch_size"],
         shuffle=False,
         collate_fn=lambda x: data_processing(x, "valid"),
-        **kwargs
+        **kwargs,
     )
 
     print("---------------------------------------")
@@ -115,7 +114,6 @@ def main(
         hparams["stride"],
         hparams["dropout"],
     ).to(device)
-
     print(model)
     print("Num Model Parameters", sum([param.nelement() for param in model.parameters()]))
 
@@ -129,14 +127,32 @@ def main(
         anneal_strategy="linear",
     )
 
+    if hparams["continue_from"]:
+        print("Loading checkpoint model %s" % hparams["continue_from"])
+        package = torch.load(hparams["continue_from"])
+        model.load_state_dict(package["state_dict"])
+        optimizer.load_state_dict(package["optim_dict"])
+        start_epoch = int(package.get("epoch", 1))
+    else:
+        start_epoch = 1
     print("---------------------------------------")
     print("Training...", flush=True)
     iter_meter = IterMeter()
-    for epoch in range(1, epochs + 1):
-        train(
-            model, device, train_loader, criterion, optimizer, scheduler, epoch, iter_meter,writer
+    for epoch in range(start_epoch, epochs + 1):
+        training_loss = train(
+            model, device, train_loader, criterion, optimizer, scheduler, epoch, iter_meter, writer
         )
-        test(model, device, test_loader, criterion, epoch, iter_meter,writer)
+        test_loss = test(model, device, test_loader, criterion, epoch, iter_meter, writer)
+        if hparams["checkpoint"]:
+            file_path = os.path.join("checkpoints", f"libri-epoch{epoch}.pth.tar")
+            torch.save(
+                model.serialize(
+                    optimizer=optimizer, epoch=epoch, tr_loss=training_loss, val_loss=test_loss
+                ),
+                file_path,
+            )
+            print()
+            print("Saving checkpoint model to %s" % file_path)
 
 
 if __name__ == "__main__":

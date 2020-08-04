@@ -119,3 +119,14 @@ class DeepSpeech(nn.Module):
         x = self.birnn_layers(x)
         x = self.classifier(x)
         return x
+
+    def serialize(self, optimizer, epoch, tr_loss, val_loss):
+        package = {
+            "state_dict": self.state_dict(),
+            "optim_dict": optimizer.state_dict(),
+            "epoch": epoch,
+        }
+        if tr_loss is not None:
+            package["tr_loss"] = tr_loss
+            package["val_loss"] = val_loss
+        return package
