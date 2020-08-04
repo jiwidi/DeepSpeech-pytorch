@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.utils.data as data
 import torch.optim as optim
 import torch.nn.functional as F
+from torch.cuda.amp import GradScaler
 import torchaudio
 from torch.utils.tensorboard import SummaryWriter
 from model.deepspeech import DeepSpeech
@@ -126,7 +127,7 @@ def main(
         epochs=hparams["epochs"],
         anneal_strategy="linear",
     )
-
+    scaler = GradScaler()
     if hparams["continue_from"]:
         print("Loading checkpoint model %s" % hparams["continue_from"])
         package = torch.load(hparams["continue_from"])
@@ -140,7 +141,16 @@ def main(
     iter_meter = IterMeter()
     for epoch in range(start_epoch, epochs + 1):
         training_loss = train(
-            model, device, train_loader, criterion, optimizer, scheduler, epoch, iter_meter, writer
+            model,
+            device,
+            train_loader,
+            criterion,
+            optimizer,
+            scheduler,
+            epoch,
+            iter_meter,
+            scaler,
+            writer,
         )
         test_loss = test(model, device, test_loader, criterion, epoch, iter_meter, writer)
         if hparams["checkpoint"]:
