@@ -87,9 +87,9 @@ def test(model, device, test_loader, criterion, epoch, iter_meter, writer):
     # experiment.log_metric("test_loss", test_loss, step=iter_meter.get())
     # experiment.log_metric("cer", avg_cer, step=iter_meter.get())
     # experiment.log_metric("wer", avg_wer, step=iter_meter.get())
-    writer.add_scalar("test_loss", test_loss, iter_meter.get())
-    writer.add_scalar("cer", avg_cer, iter_meter.get())
-    writer.add_scalar("wer", avg_wer, iter_meter.get())
+    writer.add_scalar("Loss/test", test_loss, iter_meter.get())
+    writer.add_scalar("Test_metrics/cer", avg_cer, iter_meter.get())
+    writer.add_scalar("Test_metrics/wer", avg_wer, iter_meter.get())
     print(
         "Test set: Average loss: {:.4f}, Average CER: {:4f} Average WER: {:.4f}\n".format(
             test_loss, avg_cer, avg_wer
