@@ -4,10 +4,11 @@ import torch.nn as nn
 import torch.utils.data as data
 import torch.optim as optim
 import torch.nn.functional as F
+from torch.cuda.amp import GradScaler
 import torchaudio
 from torch.utils.tensorboard import SummaryWriter
 from model.deepspeech import DeepSpeech
-from utils.functions import data_processing, GreedyDecoder
+from utils.functions import data_processing, GreedyDecoder, IterMeter
 from solver.solver import train, test
 import numpy as np
 import random
@@ -36,19 +37,6 @@ parser.add_argument(
     help="Name for tensorboard experiment logs",
     default="",
 )
-
-
-class IterMeter(object):
-    """keeps track of total iterations"""
-
-    def __init__(self):
-        self.val = 0
-
-    def step(self):
-        self.val += 1
-
-    def get(self):
-        return self.val
 
 
 def main(
@@ -87,7 +75,7 @@ def main(
     test_dataset = torchaudio.datasets.LIBRISPEECH(
         "./data", url=hparams["libri_test_set"], download=True
     )
-    kwargs = {"num_workers": 1, "pin_memory": True} if use_cuda else {}
+    kwargs = {"num_workers": 2, "pin_memory": True} if use_cuda else {}
     train_loader = data.DataLoader(
         dataset=train_dataset,
         batch_size=hparams["batch_size"],
@@ -126,7 +114,7 @@ def main(
         epochs=hparams["epochs"],
         anneal_strategy="linear",
     )
-
+    scaler = GradScaler()
     if hparams["continue_from"]:
         print("Loading checkpoint model %s" % hparams["continue_from"])
         package = torch.load(hparams["continue_from"])
@@ -140,7 +128,16 @@ def main(
     iter_meter = IterMeter()
     for epoch in range(start_epoch, epochs + 1):
         training_loss = train(
-            model, device, train_loader, criterion, optimizer, scheduler, epoch, iter_meter, writer
+            model,
+            device,
+            train_loader,
+            criterion,
+            optimizer,
+            scheduler,
+            epoch,
+            iter_meter,
+            scaler,
+            writer,
         )
         test_loss = test(model, device, test_loader, criterion, epoch, iter_meter, writer)
         if hparams["checkpoint"]:
