@@ -34,7 +34,6 @@ def train(
     data_len = len(train_loader.dataset)
     train_start_time = time.time()
     for batch_idx, _data in enumerate(train_loader):
-
         spectrograms, labels, input_lengths, label_lengths = _data
         spectrograms, labels = spectrograms.to(device), labels.to(device)
 
@@ -60,15 +59,17 @@ def train(
         writer.add_scalar("learning_rate", scheduler.get_last_lr()[0], iter_meter.get())
 
         if batch_idx % 100 == 0 or batch_idx == data_len:
+            batch_length = spectrograms.shape[0]
             train_finish_time = time.time()
+            sample_time = (train_finish_time - train_start_time) / batch_length
             print(
-                "Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tTook: {:.2f} seconds".format(
+                "Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tTook: {:.2f} seconds per sample".format(
                     epoch,
                     batch_idx * len(spectrograms),
                     data_len,
                     100.0 * batch_idx / len(train_loader),
                     loss.item(),
-                    train_finish_time - train_start_time,
+                    sample_time,
                 )
             )
             train_start_time = time.time()
