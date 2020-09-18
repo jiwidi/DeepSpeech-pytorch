@@ -1,22 +1,51 @@
+
+---
+
+<div align="center">
+
 # DeepSpeech-pytorch
 
+</div>
+
+## Description
 End-to-end speech recognition model in PyTorch
 
+## Results
+Results of training for 10 epochs show a great potencial. I would like to spend more time finetuning the model and training for longer epochs but I need to purchase cloud computing for that and is out of my scope right now.
 
-### Data pipeline
+Loss
+-----
 
-For testing the model we used the Librispeech dataset and performed a MelSpectogram followed by FrequencyMasking to mask out the frequency dimension, and TimeMasking for the time dimension.
+|        Training data        |          Test data           |
+| :-------------------------: | :--------------------------: |
+| ![tr](images/trainloss.png) | ![test](images/testloss.png) |
 
-```py
-train_audio_transforms = nn.Sequential(
-    torchaudio.transforms.MelSpectrogram(sample_rate=16000, n_mels=128),
-    torchaudio.transforms.FrequencyMasking(freq_mask_param=15),
-    torchaudio.transforms.TimeMasking(time_mask_param=35)
-)
+Metrics on `test-clean`
+-----
+
+| Character error rate CER |  Word error rate WER   |
+| :----------------------: | :--------------------: |
+|  ![CER](images/cer.png)  | ![WER](images/wer.png) |
+
+## How to run
+First, install dependencies
+```bash
+# clone project
+git clone https://github.com/jiwidi/DeepSpeech-pytorch
+
+# install project
+cd DeepSpeech-pytorch
+pip install -e .
+pip install -r requirements.txt
+ ```
+Ready to run! execute:
+```python
+python train.py --config_path config/libri.yaml --experiment_name test
 ```
 
+Tensorboard logs will be saved under the `runs/` folder
 
-### The model
+## The model
 The model is a variation of DeepSpeech 2 from the guys at [assemblyai](https://www.assemblyai.com/)
 
 ```py
@@ -79,33 +108,4 @@ Num Model Parameters 14233053
 With the following architecture:
 ![model_architecture](images/model_architecture.png)
 
-### Training
 
-We trained in the full librispeech dataset with a [CTC loss function](https://pytorch.org/docs/stable/generated/torch.nn.CTCLoss.html) that is very well explained at https://distill.pub/2017/ctc/
-
-### Results
-Results of training for 10 epochs show a great potencial. I would like to spend more time finetuning the model and training for longer epochs but I need to purchase cloud computing for that and is out of my scope right now.
-
-Loss
------
-
-|        Training data        |          Test data           |
-| :-------------------------: | :--------------------------: |
-| ![tr](images/trainloss.png) | ![test](images/testloss.png) |
-
-Metrics on `test-clean`
------
-
-| Character error rate CER |  Word error rate WER   |
-| :----------------------: | :--------------------: |
-|  ![CER](images/cer.png)  | ![WER](images/wer.png) |
-
-#### Reproduce the results
-
-Just install al requirements and run
-
-```bash
-python train.py --config_path config/libri.yaml --experiment_name test
-```
-
-Tensorboard logs will be saved under the `runs/` folder
