@@ -42,7 +42,7 @@ def run_cli():
     # Data
     parser.add_argument("--num_workers", default=4, type=int)
     parser.add_argument("--batch_size", default=8, type=int)
-    parser.add_argument("--data_root", default="/mnt/data/github/DeepSpeech-pytorch/data/", type=str)
+    parser.add_argument("--data_root", default="data/", type=str)
     parser.add_argument("--data_url", default=["train-clean-100", "train-clean-360", "train-other-500"])
 
     # training params (opt)

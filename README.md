@@ -40,7 +40,7 @@ pip install -r requirements.txt
  ```
 Ready to run! execute:
 ```python
-python train.py --config_path config/libri.yaml --experiment_name test
+python train.py #Will run with default parameters and donwload the datasets in the local directory
 ```
 
 Tensorboard logs will be saved under the `runs/` folder
