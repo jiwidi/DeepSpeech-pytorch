@@ -6,10 +6,11 @@ from argparse import ArgumentParser
 
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import EarlyStopping
+from pytorch_lightning.loggers import TensorBoardLogger
 
 from project.model.deepspeech_main import DeepSpeech
 
-seed_everything(234)
+seed_everything(42)
 
 
 def main(args):
@@ -41,24 +42,25 @@ def run_cli():
     parser = DeepSpeech.add_model_specific_args(parent_parser, root_dir)
     # Data
     parser.add_argument("--num_workers", default=4, type=int)
-    parser.add_argument("--batch_size", default=8, type=int)
+    parser.add_argument("--batch_size", default=4, type=int)
     parser.add_argument("--data_root", default="data/", type=str)
     parser.add_argument("--data_url", default=["train-clean-100", "train-clean-360", "train-other-500"])
 
     # training params (opt)
-    parser.add_argument("--epochs", default=20, type=int)
-    parser.add_argument("--learning_rate", default=0.001, type=float)
+    parser.add_argument("--epochs", default=10, type=int)
+    parser.add_argument("--learning_rate", default=0.0005, type=float)
     parser.add_argument("--accumulate_grad_batches", default=40, type=int)
     parser.add_argument("--gpus", default=1, type=int)
     parser.add_argument("--precission", default=16, type=int)
-    parser.add_argument("--gradient_clip", default=0.5, type=float)
-    parser.add_argument("--auto_scale_batch_size", default=True, type=bool)
+    parser.add_argument("--gradient_clip", default=0, type=float)
+    parser.add_argument("--auto_scale_batch_size", default=False, type=bool)
     parser.add_argument("--auto_select_gpus", default=True, type=bool)
     parser.add_argument("--log_gpu_memory", default=True, type=bool)
-    parser.add_argument("--use_amp", default=True, type=bool)
+    parser.add_argument("--use_amp", default=False, type=bool) #update when getting ampere
     parser.add_argument("--early_stop_metric", default="wer", type=str)
     parser.add_argument("--early_stop_patience", default=3, type=int)
-
+    parser.add_argument("--experiment_name", default="DeepSpeech", type=str)
+    parser.add_argument("--loggs_path", default="lightning_logs", type=str)
     # callbacks
 
     # parser = Trainer.add_argparse_args(parser)
@@ -70,9 +72,12 @@ def run_cli():
         patience=args.early_stop_patience,
         verbose=True,
     )
+    #Logger
+    logger = TensorBoardLogger(save_dir=args.loggs_path, name=args.experiment_name)
 
     args.early_stop_callback = early_stop
-    setattr(args, "accumulate_grad_batches", 40)
+    args.logger = logger
+    #setattr(args, "accumulate_grad_batches", 40)
 
     # ---------------------
     # RUN TRAINING

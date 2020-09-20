@@ -242,7 +242,13 @@ class DeepSpeech(LightningModule):
         At least one optimizer is required.
         """
         optimizer = optim.AdamW(self.parameters(), lr=self.hparams.learning_rate)
-        scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10)
+        scheduler = optim.lr_scheduler.OneCycleLR(
+            optimizer,
+            max_lr=self.hparams.learning_rate,
+            steps_per_epoch=int(len(self.train_dataloader())),
+            epochs=self.hparams.epochs,
+            anneal_strategy="linear",
+        )
         # NEED to change
         return [optimizer], [scheduler]
 
