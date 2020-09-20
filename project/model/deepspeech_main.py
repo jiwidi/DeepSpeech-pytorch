@@ -267,13 +267,13 @@ class DeepSpeech(LightningModule):
         self.train_data = data.ConcatDataset(
             [
                 torchaudio.datasets.LIBRISPEECH(self.hparams.data_root, url=path, download=True)
-                for path in self.hparams.data_url
+                for path in self.hparams.data_train
             ]
         )
         self.test_data = data.ConcatDataset(
             [
                 torchaudio.datasets.LIBRISPEECH(self.hparams.data_root, url=path, download=True)
-                for path in self.hparams.data_url
+                for path in self.hparams.data_test
             ]
         )
 
@@ -311,8 +311,8 @@ class DeepSpeech(LightningModule):
         """
         parser = ArgumentParser(parents=[parent_parser])
 
-        parser.add_argument("--n_cnn_layers", default=3, type=int)
-        parser.add_argument("--n_rnn_layers", default=5, type=int)
+        parser.add_argument("--n_cnn_layers", default=2, type=int)
+        parser.add_argument("--n_rnn_layers", default=3, type=int)
         parser.add_argument("--rnn_dim", default=512, type=int)
         parser.add_argument("--n_class", default=29, type=int)
         parser.add_argument("--n_feats", default=128, type=str)

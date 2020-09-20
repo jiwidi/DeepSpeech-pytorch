@@ -44,14 +44,15 @@ def run_cli():
     parser.add_argument("--num_workers", default=4, type=int)
     parser.add_argument("--batch_size", default=4, type=int)
     parser.add_argument("--data_root", default="data/", type=str)
-    parser.add_argument("--data_url", default=["train-clean-100", "train-clean-360", "train-other-500"])
+    parser.add_argument("--data_train", default=["train-clean-100", "train-clean-360", "train-other-500"])
+    parser.add_argument("--data_test", default=["test-clean"])
 
     # training params (opt)
     parser.add_argument("--epochs", default=10, type=int)
     parser.add_argument("--learning_rate", default=0.0005, type=float)
-    parser.add_argument("--accumulate_grad_batches", default=40, type=int)
+    #parser.add_argument("--accumulate_grad_batches", default=40, type=int)
     parser.add_argument("--gpus", default=1, type=int)
-    parser.add_argument("--precission", default=16, type=int)
+    parser.add_argument("--precission", default=32, type=int)
     parser.add_argument("--gradient_clip", default=0, type=float)
     parser.add_argument("--auto_scale_batch_size", default=False, type=bool)
     parser.add_argument("--auto_select_gpus", default=True, type=bool)
@@ -60,7 +61,7 @@ def run_cli():
     parser.add_argument("--early_stop_metric", default="wer", type=str)
     parser.add_argument("--early_stop_patience", default=3, type=int)
     parser.add_argument("--experiment_name", default="DeepSpeech", type=str)
-    parser.add_argument("--loggs_path", default="lightning_logs", type=str)
+    parser.add_argument("--loggs_path", default="runs", type=str)
     # callbacks
 
     # parser = Trainer.add_argparse_args(parser)
