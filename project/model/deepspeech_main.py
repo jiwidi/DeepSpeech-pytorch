@@ -255,11 +255,11 @@ class DeepSpeech(LightningModule):
     def prepare_data(self):
         [
             torchaudio.datasets.LIBRISPEECH(self.hparams.data_root, url=path, download=True)
-            for path in self.hparams.data_url
+            for path in self.hparams.data_train
         ]
         [
             torchaudio.datasets.LIBRISPEECH(self.hparams.data_root, url=path, download=True)
-            for path in self.hparams.data_url
+            for path in self.hparams.data_test
         ]
 
     def setup(self, stage):
