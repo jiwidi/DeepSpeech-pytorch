@@ -5,7 +5,7 @@ import os
 from argparse import ArgumentParser
 
 from pytorch_lightning import Trainer, seed_everything
-from pytorch_lightning.callbacks import EarlyStopping
+from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 
 from project.model.deepspeech_main import DeepSpeech
@@ -24,7 +24,6 @@ def main(args):
     # 2 INIT TRAINER
     # ------------------------
     trainer = Trainer.from_argparse_args(args)
-
     # ------------------------
     # 3 START TRAINING
     # ------------------------
@@ -50,19 +49,19 @@ def run_cli():
     # training params (opt)
     parser.add_argument("--epochs", default=10, type=int)
     parser.add_argument("--learning_rate", default=0.0005, type=float)
-    #parser.add_argument("--accumulate_grad_batches", default=40, type=int)
+    # parser.add_argument("--accumulate_grad_batches", default=40, type=int)
     parser.add_argument("--gpus", default=1, type=int)
     parser.add_argument("--precission", default=32, type=int)
     parser.add_argument("--gradient_clip", default=0, type=float)
     parser.add_argument("--auto_scale_batch_size", default=False, type=bool)
     parser.add_argument("--auto_select_gpus", default=True, type=bool)
     parser.add_argument("--log_gpu_memory", default=True, type=bool)
-    parser.add_argument("--use_amp", default=False, type=bool) #update when getting ampere
+    parser.add_argument("--use_amp", default=False, type=bool)  # update when getting ampere
     parser.add_argument("--early_stop_metric", default="wer", type=str)
     parser.add_argument("--early_stop_patience", default=3, type=int)
     parser.add_argument("--experiment_name", default="DeepSpeech", type=str)
     parser.add_argument("--loggs_path", default="runs", type=str)
-    # callbacks
+    # Callbacks
 
     # parser = Trainer.add_argparse_args(parser)
     args = parser.parse_args()
@@ -73,12 +72,23 @@ def run_cli():
         patience=args.early_stop_patience,
         verbose=True,
     )
-    #Logger
+
+    # Checkpoint manager
+    checkpoint_callback = ModelCheckpoint(
+        verbose=True,
+        # save_top_k=5,  # Save 5 Top models
+        # monitor="wer",
+        # mode="min",
+        # period=1,
+    )
+
+    # Logger
     logger = TensorBoardLogger(save_dir=args.loggs_path, name=args.experiment_name)
 
+    args.checkpoint_callback = checkpoint_callback
     args.early_stop_callback = early_stop
     args.logger = logger
-    #setattr(args, "accumulate_grad_batches", 40)
+    # setattr(args, "accumulate_grad_batches", 40)
 
     # ---------------------
     # RUN TRAINING
