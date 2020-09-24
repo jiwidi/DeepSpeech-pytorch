@@ -7,25 +7,7 @@
 
 </div>
 
-## Description
-End-to-end speech recognition model in PyTorch
-
-## Results
-Results of training for 10 epochs show a great potencial. I would like to spend more time finetuning the model and training for longer epochs but I need to purchase cloud computing for that and is out of my scope right now.
-
-Loss
------
-
-|        Training data        |          Test data           |
-| :-------------------------: | :--------------------------: |
-| ![tr](images/trainloss.png) | ![test](images/testloss.png) |
-
-Metrics on `test-clean`
------
-
-| Character error rate CER |  Word error rate WER   |
-| :----------------------: | :--------------------: |
-|  ![CER](images/cer.png)  | ![WER](images/wer.png) |
+End-to-end speech recognition model in PyTorch with DeepSpeech model
 
 ## How to run
 First, install dependencies
@@ -105,6 +87,22 @@ DeepSpeech(
 Num Model Parameters 14233053
 
 ```
+## Results
+Results of training for 10 epochs show a great potencial. I would like to spend more time finetuning the model and training for longer epochs but I need to purchase cloud computing for that and is out of my scope right now.
+
+Loss
+-----
+
+|        Training data        |          Test data           |
+| :-------------------------: | :--------------------------: |
+| ![tr](images/trainloss.png) | ![test](images/testloss.png) |
+
+Metrics on `test-clean`
+-----
+
+| Character error rate CER |  Word error rate WER   |
+| :----------------------: | :--------------------: |
+|  ![CER](images/cer.png)  | ![WER](images/wer.png) |
 
 ### Data pipeline
 
