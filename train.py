@@ -49,7 +49,7 @@ def run_cli():
     # training params (opt)
     parser.add_argument("--epochs", default=10, type=int)
     parser.add_argument("--learning_rate", default=0.0005, type=float)
-    parser.add_argument("--accumulate_grad_batches", default=40, type=int)
+    # parser.add_argument("--accumulate_grad_batches", default=40, type=int)
     parser.add_argument("--gpus", default=1, type=int)
     parser.add_argument("--precission", default=32, type=int)
     parser.add_argument("--gradient_clip", default=0, type=float)
