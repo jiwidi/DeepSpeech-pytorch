@@ -85,8 +85,10 @@ DeepSpeech(
   )
 )
 Num Model Parameters 14233053
-
 ```
+With the following architecture:
+![model_architecture](images/model_architecture.png)
+
 ## Results
 Results of training for 10 epochs show a great potencial. I would like to spend more time finetuning the model and training for longer epochs but I need to purchase cloud computing for that and is out of my scope right now.
 
@@ -115,7 +117,5 @@ train_audio_transforms = nn.Sequential(
     torchaudio.transforms.TimeMasking(time_mask_param=35)
 )
 ```
-With the following architecture:
-![model_architecture](images/model_architecture.png)
 
 
