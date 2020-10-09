@@ -10,7 +10,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 .github
-
+.fuse
 # C extensions
 *.so
 
