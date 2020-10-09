@@ -3,6 +3,7 @@ Example template for defining a system.
 """
 from argparse import ArgumentParser
 
+import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -14,6 +15,7 @@ from pytorch_lightning.core import LightningModule
 from torch.utils.data import DataLoader
 
 from project.utils.functions import data_processing, GreedyDecoder, cer, wer
+from project.utils.cosine_annearing_with_warmup import CosineAnnealingWarmUpRestarts
 
 
 class CNNLayerNorm(nn.Module):
@@ -85,6 +87,7 @@ class DeepSpeech(LightningModule):
     def __init__(self, n_cnn_layers, n_rnn_layers, rnn_dim, n_class, n_feats, stride=2, dropout=0.1, **kwargs):
         super(DeepSpeech, self).__init__()
         self.save_hyperparameters()
+        self.learning_rate = self.hparams.learning_rate
         n_feats = n_feats // 2
         self.cnn = nn.Conv2d(1, 32, 3, stride=stride, padding=3 // 2)  # cnn for extracting heirachal features
 
@@ -247,29 +250,34 @@ class DeepSpeech(LightningModule):
         Return whatever optimizers and learning rate schedulers you want here.
         At least one optimizer is required.
         """
-        optimizer = optim.AdamW(self.parameters(), lr=self.hparams.learning_rate)
-        lr_scheduler = {'scheduler': optim.lr_scheduler.OneCycleLR(
-                                        optimizer,
-                                        max_lr=self.hparams.learning_rate,
-                                        steps_per_epoch=int(len(self.train_dataloader())),
-                                        epochs=self.hparams.epochs,
-                                        anneal_strategy="linear",
-                                    ),
-                        'name': 'learning_rate',
+        optimizer = optim.AdamW(self.parameters(), lr=self.learning_rate/10)
+        # lr_scheduler = {'scheduler':optim.lr_scheduler.CyclicLR(optimizer,base_lr=self.hparams.learning_rate/5,max_lr=self.hparams.learning_rate,step_size_up=2000,cycle_momentum=False),
+        lr_scheduler = {# 'scheduler': optim.lr_scheduler.OneCycleLR(
+                                    #     optimizer,
+                                    #     max_lr=self.learning_rate,
+                                    #     steps_per_epoch=int(len(self.train_dataloader())),
+                                    #     epochs=self.hparams.epochs,
+                                    #     anneal_strategy="linear",
+                                    #     final_div_factor = 0.06,
+                                    #     pct_start = 0.04
+                                    # ),
+                        'scheduler': CosineAnnealingWarmUpRestarts(optimizer, T_0=int(len(self.train_dataloader())*math.pi), T_mult=2, eta_max=self.learning_rate,  T_up=int(len(self.train_dataloader()))*2, gamma=0.8),
+                        'name': 'learning_rate', #Name for tensorboard logs
                         'interval':'step',
-                        'frequency':1}
+                        'frequency': 1}
 
         return [optimizer], [lr_scheduler]
 
     def prepare_data(self):
-        [
+        a = [
             torchaudio.datasets.LIBRISPEECH(self.hparams.data_root, url=path, download=True)
             for path in self.hparams.data_train
         ]
-        [
+        b = [
             torchaudio.datasets.LIBRISPEECH(self.hparams.data_root, url=path, download=True)
             for path in self.hparams.data_test
         ]
+        return a,b
 
     def setup(self, stage):
         self.train_data = data.ConcatDataset(

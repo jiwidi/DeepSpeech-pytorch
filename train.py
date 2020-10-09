@@ -59,13 +59,15 @@ def main(args):
                     gpus=1,
                     auto_select_gpus=True,
                     log_gpu_memory=True,
-                    precission=32,
-                    amp_level = 'O0',
+                    # precision=args.precision,
                     logger=logger,
                     row_log_interval = args.batch_size,
                     early_stop_callback = early_stop,
                     checkpoint_callback= checkpoint_callback,
-                    callbacks=[lr_logger]
+                    callbacks=[lr_logger],
+                    fast_dev_run=False,
+                    # resume_from_checkpoint='/mnt/data/github/DeepSpeech-pytorch/runs/DeepSpeech_onecycle_defaultbits/version_1/checkpoints/epoch=12.ckpt',
+                    # auto_lr_find='learning_rate',
                     )
     # ------------------------
     # 4 START TRAINING
@@ -83,19 +85,22 @@ def run_cli():
     parser = DeepSpeech.add_model_specific_args(parent_parser)
     # Data
     parser.add_argument("--num_workers", default=4, type=int)
-    parser.add_argument("--batch_size", default=20, type=int)
+    parser.add_argument("--batch_size", default=40, type=int)
     parser.add_argument("--data_root", default="data/", type=str)
     parser.add_argument("--data_train", default=["train-clean-100", "train-clean-360", "train-other-500"])
     parser.add_argument("--data_test", default=["test-clean"])
     # Training params (opt)
-    parser.add_argument("--epochs", default=10, type=int)
+    parser.add_argument("--epochs", default=100, type=int)
     parser.add_argument("--learning_rate", default=0.0005, type=float)
     #parser.add_argument("--precission", default=16, type=int)
     parser.add_argument("--early_stop_metric", default="wer", type=str)
-    parser.add_argument("--logs_path", default="/mnt/data/github/tmp/fixedTensoboard/DeepSpeech-pytorch/runs/", type=str)
+    parser.add_argument("--logs_path", default="runs/", type=str)
     parser.add_argument("--experiment_name", default="DeepSpeech", type=str)
     parser.add_argument("--early_stop_patience", default=3, type=int)
     parser.add_argument("--resume_from_checkpoint", default=None, type=str)
+    #Precission args
+    parser.add_argument("--amp_level", default='02', type=str)
+    parser.add_argument("--precision", default=32, type=int)
 
     args = parser.parse_args()
     # ---------------------
