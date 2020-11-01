@@ -9,7 +9,7 @@ import torch
 
 from argparse import ArgumentParser
 from pytorch_lightning import Trainer, seed_everything
-from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, LearningRateLogger
+from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, LearningRateMonitor
 from pytorch_lightning.loggers import TensorBoardLogger
 
 from project.model.deepspeech_main import DeepSpeech
@@ -49,7 +49,7 @@ def main(args):
     )
     # Loggers
     logger = TensorBoardLogger(save_dir=args.logs_path, name=args.experiment_name)
-    lr_logger = LearningRateLogger(logging_interval='step')
+    lr_logger = LearningRateMonitor(logging_interval='step')
     # ------------------------
     # 3 INIT TRAINER
     # ------------------------
@@ -61,11 +61,8 @@ def main(args):
                     log_gpu_memory=True,
                     # precision=args.precision,
                     logger=logger,
-                    row_log_interval = args.batch_size,
-                    early_stop_callback = early_stop,
-                    checkpoint_callback= checkpoint_callback,
-                    callbacks=[lr_logger],
-                    fast_dev_run=False,
+                    # checkpoint_callback= checkpoint_callback,
+                    callbacks=[lr_logger,early_stop,checkpoint_callback],
                     # resume_from_checkpoint='/mnt/data/github/DeepSpeech-pytorch/runs/DeepSpeech_onecycle_defaultbits/version_1/checkpoints/epoch=12.ckpt',
                     # auto_lr_find='learning_rate',
                     )

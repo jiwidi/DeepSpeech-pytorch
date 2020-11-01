@@ -3,6 +3,7 @@ Example template for defining a system.
 """
 from argparse import ArgumentParser
 
+import os
 import math
 import torch
 import torch.nn as nn
@@ -269,6 +270,8 @@ class DeepSpeech(LightningModule):
         return [optimizer], [lr_scheduler]
 
     def prepare_data(self):
+        if not os.path.exists(self.hparams.data_root):
+            os.makedirs(self.hparams.data_root)
         a = [
             torchaudio.datasets.LIBRISPEECH(self.hparams.data_root, url=path, download=True)
             for path in self.hparams.data_train
