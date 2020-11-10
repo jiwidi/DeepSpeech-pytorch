@@ -253,21 +253,21 @@ class DeepSpeech(LightningModule):
         """
         optimizer = optim.AdamW(self.parameters(), lr=self.learning_rate/10)
         # lr_scheduler = {'scheduler':optim.lr_scheduler.CyclicLR(optimizer,base_lr=self.hparams.learning_rate/5,max_lr=self.hparams.learning_rate,step_size_up=2000,cycle_momentum=False),
-        lr_scheduler = {# 'scheduler': optim.lr_scheduler.OneCycleLR(
-                                    #     optimizer,
-                                    #     max_lr=self.learning_rate,
-                                    #     steps_per_epoch=int(len(self.train_dataloader())),
-                                    #     epochs=self.hparams.epochs,
-                                    #     anneal_strategy="linear",
-                                    #     final_div_factor = 0.06,
-                                    #     pct_start = 0.04
-                                    # ),
-                        'scheduler': CosineAnnealingWarmUpRestarts(optimizer, T_0=int(len(self.train_dataloader())*math.pi), T_mult=2, eta_max=self.learning_rate,  T_up=int(len(self.train_dataloader()))*2, gamma=0.8),
-                        'name': 'learning_rate', #Name for tensorboard logs
-                        'interval':'step',
-                        'frequency': 1}
+        # lr_scheduler = {# 'scheduler': optim.lr_scheduler.OneCycleLR(
+        #                             #     optimizer,
+        #                             #     max_lr=self.learning_rate,
+        #                             #     steps_per_epoch=int(len(self.train_dataloader())),
+        #                             #     epochs=self.hparams.epochs,
+        #                             #     anneal_strategy="linear",
+        #                             #     final_div_factor = 0.06,
+        #                             #     pct_start = 0.04
+        #                             # ),
+        #                 'scheduler': CosineAnnealingWarmUpRestarts(optimizer, T_0=int(len(self.train_dataloader())*math.pi), T_mult=2, eta_max=self.learning_rate,  T_up=int(len(self.train_dataloader()))*2, gamma=0.8),
+        #                 'name': 'learning_rate', #Name for tensorboard logs
+        #                 'interval':'step',
+        #                 'frequency': 1}
 
-        return [optimizer], [lr_scheduler]
+        return [optimizer] #, [lr_scheduler]
 
     def prepare_data(self):
         if not os.path.exists(self.hparams.data_root):
