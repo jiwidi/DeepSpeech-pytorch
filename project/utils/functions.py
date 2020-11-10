@@ -7,6 +7,9 @@ import torch.nn.functional as F
 import torchaudio
 import numpy as np
 
+sos_id = 0
+eos_id = 1
+
 
 def avg_wer(wer_scores, combined_ref_len):
     return float(sum(wer_scores)) / float(combined_ref_len)
@@ -174,7 +177,9 @@ def cer(reference, hypothesis, ignore_case=False, remove_space=False):
     :rtype: float
     :raises ValueError: If the reference length is zero.
     """
-    edit_distance, ref_len = char_errors(reference, hypothesis, ignore_case, remove_space)
+    edit_distance, ref_len = char_errors(
+        reference, hypothesis, ignore_case, remove_space
+    )
 
     if ref_len == 0:
         raise ValueError("Length of reference should be greater than 0.")
@@ -188,34 +193,36 @@ class TextTransform:
 
     def __init__(self):
         char_map_str = """
-        ' 0
-        <SPACE> 1
-        a 2
-        b 3
-        c 4
-        d 5
-        e 6
-        f 7
-        g 8
-        h 9
-        i 10
-        j 11
-        k 12
-        l 13
-        m 14
-        n 15
-        o 16
-        p 17
-        q 18
-        r 19
-        s 20
-        t 21
-        u 22
-        v 23
-        w 24
-        x 25
-        y 26
-        z 27
+        sos_id 0
+        eos_id 1
+        ' 2
+        <SPACE> 3
+        a 4
+        b 5
+        c 6
+        d 7
+        e 8
+        f 9
+        g 10
+        h 11
+        i 12
+        j 13
+        k 14
+        l 15
+        m 16
+        n 17
+        o 18
+        p 19
+        q 20
+        r 21
+        s 22
+        t 23
+        u 24
+        v 25
+        w 26
+        x 27
+        y 28
+        z 29
         """
         self.char_map = {}
         self.index_map = {}
@@ -223,7 +230,7 @@ class TextTransform:
             ch, index = line.split()
             self.char_map[ch] = int(index)
             self.index_map[int(index)] = ch
-        self.index_map[1] = " "
+        self.index_map[3] = " "
 
     def text_to_int(self, text):
         """ Use a character map and convert text to an integer sequence """
@@ -268,26 +275,34 @@ def data_processing(data, data_type="train"):
         else:
             raise Exception("data_type should be train or valid")
         spectrograms.append(spec)
-        label = torch.Tensor(text_transform.text_to_int(utterance.lower()))
+        label = torch.Tensor(
+            [sos_id] + text_transform.text_to_int(utterance.lower()) + [eos_id]
+        )
         labels.append(label)
         input_lengths.append(spec.shape[0] // 2)
         label_lengths.append(len(label))
 
     spectrograms = (
-        nn.utils.rnn.pad_sequence(spectrograms, batch_first=True).unsqueeze(1).transpose(2, 3)
+        nn.utils.rnn.pad_sequence(spectrograms, batch_first=True)
+        .unsqueeze(1)
+        .transpose(2, 3)
     )
     labels = nn.utils.rnn.pad_sequence(labels, batch_first=True)
 
     return spectrograms, labels, input_lengths, label_lengths
 
 
-def GreedyDecoder(output, labels, label_lengths, blank_label=28, collapse_repeated=True):
+def GreedyDecoder(
+    output, labels, label_lengths, blank_label=28, collapse_repeated=True
+):
     arg_maxes = torch.argmax(output, dim=2)
     decodes = []
     targets = []
     for i, args in enumerate(arg_maxes):
         decode = []
-        targets.append(text_transform.int_to_text(labels[i][: label_lengths[i]].tolist()))
+        targets.append(
+            text_transform.int_to_text(labels[i][: label_lengths[i]].tolist())
+        )
         for j, index in enumerate(args):
             if index != blank_label:
                 if collapse_repeated and j != 0 and index == args[j - 1]:
